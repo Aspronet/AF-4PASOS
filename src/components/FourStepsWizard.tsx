@@ -11,7 +11,7 @@ const SUPABASE_STORAGE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/obj
 
 const STEPS = [
   { num: 1, title: "Intro al Nuevo Socio", video: `${SUPABASE_STORAGE}/step1-intro.mp4` },
-  { num: 2, title: "Requisitos de la Academia", video: `${SUPABASE_STORAGE}/step1-intro.mp4` },
+  { num: 2, title: "Requisitos de la Academia", video: "https://vz-bf813903-705.b-cdn.net/e39ccda2-059b-4bae-9b61-b5de2b1c21c1/playlist.m3u8" },
   { num: 3, title: "Aplicación a la Academia", video: null },
   { num: 4, title: "Confirma tu Cita", video: `${SUPABASE_STORAGE}/step1-intro.mp4` },
 ];
@@ -64,16 +64,20 @@ interface LeadInfo {
 const ACCENT = "#E8920D";
 const ACCENT_LIGHT = "#FDF0DC";
 
+/* ── Sealed email storage key ── */
+const SEALED_EMAIL_KEY = "af4p_sealed_email";
+
 export default function FourStepsWizard() {
   const searchParams = useSearchParams();
-  const emailParam = searchParams.get("email") || "";
+  const refParam = searchParams.get("ref") || "";
 
-  const [email, setEmail] = useState(emailParam);
+  const [email, setEmail] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [lead, setLead] = useState<LeadInfo | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [autoLogging, setAutoLogging] = useState(false);
 
   // Video state
   const [videoProgress, setVideoProgress] = useState(0);
@@ -97,7 +101,38 @@ export default function FourStepsWizard() {
   // Track completed steps
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
-  useEffect(() => { if (emailParam) setEmail(emailParam); }, [emailParam]);
+  /* ── Sealed email: ?ref= param seals email in localStorage, auto-login ── */
+  const autoLoginAttempted = useRef(false);
+  useEffect(() => {
+    if (autoLoginAttempted.current || authenticated) return;
+
+    // Priority 1: ?ref= param → seal it and auto-login
+    if (refParam) {
+      const sealed = refParam.trim().toLowerCase();
+      localStorage.setItem(SEALED_EMAIL_KEY, sealed);
+      setEmail(sealed);
+      setAutoLogging(true);
+      autoLoginAttempted.current = true;
+      return;
+    }
+
+    // Priority 2: previously sealed email in cache → auto-login
+    const cached = localStorage.getItem(SEALED_EMAIL_KEY);
+    if (cached) {
+      setEmail(cached);
+      setAutoLogging(true);
+      autoLoginAttempted.current = true;
+    }
+  }, [refParam, authenticated]);
+
+  // Auto-login when autoLogging is triggered
+  useEffect(() => {
+    if (autoLogging && email && !authenticated) {
+      handleLogin(email);
+      setAutoLogging(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLogging, email, authenticated]);
 
   /* ── DEV: press "9" to skip video to 95% ── */
   useEffect(() => {
@@ -112,14 +147,18 @@ export default function FourStepsWizard() {
   }, []);
 
   /* ── Login: buscar lead por email ── */
-  async function handleLogin() {
-    if (!email.trim()) { setError("Ingresá tu email"); return; }
+  async function handleLogin(overrideEmail?: string) {
+    const loginEmail = (overrideEmail || email).trim().toLowerCase();
+    if (!loginEmail) { setError("Ingresá tu email"); return; }
     setLoading(true); setError("");
+
+    // Seal email in localStorage (immutable for the user)
+    localStorage.setItem(SEALED_EMAIL_KEY, loginEmail);
 
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      body: JSON.stringify({ email: loginEmail }),
     });
     const data = await res.json();
 
@@ -292,8 +331,55 @@ export default function FourStepsWizard() {
     videoTrackedStart.current = false;
   }, [currentStep]);
 
+  /* ── HLS loader: attach hls.js for .m3u8 sources (Safari plays natively) ── */
+  useEffect(() => {
+    const src = STEPS[currentStep - 1]?.video;
+    const v = videoRef.current;
+    if (!v || !src) return;
+
+    const isHls = src.includes(".m3u8");
+    if (!isHls) {
+      v.src = src;
+      return;
+    }
+
+    if (v.canPlayType("application/vnd.apple.mpegurl")) {
+      v.src = src;
+      return;
+    }
+
+    let hls: import("hls.js").default | null = null;
+    let cancelled = false;
+    import("hls.js").then(({ default: Hls }) => {
+      if (cancelled || !videoRef.current) return;
+      if (!Hls.isSupported()) { videoRef.current.src = src; return; }
+      hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+    });
+
+    return () => {
+      cancelled = true;
+      hls?.destroy();
+    };
+  }, [currentStep, authenticated]);
+
   /* ═══════ LOGIN SCREEN ═══════ */
+  const isSealed = typeof window !== "undefined" && !!localStorage.getItem(SEALED_EMAIL_KEY);
+
   if (!authenticated) {
+    // Auto-login in progress — show loading spinner
+    if (loading && isSealed) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 gap-4">
+          <img src="/logo-asprofunnel.png" alt="AsproFunnel" className="h-10 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E8920D] rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Ingresando...</p>
+          {error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
+      );
+    }
+
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
         <div className="mb-10 flex flex-col items-center gap-2">
@@ -313,7 +399,7 @@ export default function FourStepsWizard() {
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-900 outline-none focus:border-[#F5A623] focus:ring-1 focus:ring-[#F5A623]"
             />
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <button onClick={handleLogin} disabled={loading}
+            <button onClick={() => handleLogin()} disabled={loading}
               className="w-full rounded-xl py-3.5 text-sm font-semibold text-white disabled:opacity-50"
               style={{ backgroundColor: ACCENT }}
             >
@@ -439,7 +525,6 @@ export default function FourStepsWizard() {
                   {/* Video element */}
                   <video
                     ref={videoRef}
-                    src={STEPS[currentStep - 1].video!}
                     className="h-full w-full object-cover"
                     onTimeUpdate={handleTimeUpdate}
                     onEnded={handleVideoEnd}
