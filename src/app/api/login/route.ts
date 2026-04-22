@@ -14,11 +14,15 @@ export async function POST(req: NextRequest) {
     .eq("email", email.trim().toLowerCase())
     .order("created_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
     return NextResponse.json(
-      { error: error?.message || "No encontramos una cuenta con ese email." },
+      { error: "No encontramos una cuenta con ese email." },
       { status: 404 }
     );
   }

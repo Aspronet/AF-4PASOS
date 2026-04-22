@@ -1,29 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --bg-dark: #0A0A0F;
-  --bg-card: #141419;
-  --bg-card-hover: #1A1A22;
-  --border: #2A2A35;
-  --border-hover: #3A3A48;
-  --text-primary: #F5F5F5;
-  --text-secondary: #A0A0B0;
-  --text-muted: #6B6B80;
-  --accent: #6366F1;
-  --accent-hover: #818CF8;
-  --accent-bg: rgba(99, 102, 241, 0.08);
-  --success: #16A34A;
-  --success-bg: rgba(22, 163, 74, 0.08);
+  color-scheme: dark;
+
+  /* Nexfy brand tokens (from nexfy.io) */
+  --nexfy-bg: #0b0d10;
+  --nexfy-bg-elevated: #12161c;
+  --nexfy-surface: #171c24;
+  --nexfy-surface-hover: #1c222b;
+  --nexfy-border: #242b35;
+  --nexfy-border-strong: #323a46;
+  --nexfy-text: #f5f6f8;
+  --nexfy-text-secondary: #cdd1da;
+  --nexfy-text-tertiary: #a0a8b5;
+  --nexfy-text-muted: #6a7180;
+  --nexfy-text-inverse: #0b0d10;
+  --nexfy-accent: #4ade80;
+  --nexfy-accent-hover: #22c55e;
+  --nexfy-accent-glow: rgba(74, 222, 128, 0.14);
+
+  /* Typography */
+  --font-display: var(--font-satoshi), var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
 }
 
 @theme inline {
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+
+  --color-nexfy-bg: var(--nexfy-bg);
+  --color-nexfy-bg-elevated: var(--nexfy-bg-elevated);
+  --color-nexfy-surface: var(--nexfy-surface);
+  --color-nexfy-surface-hover: var(--nexfy-surface-hover);
+  --color-nexfy-border: var(--nexfy-border);
+  --color-nexfy-border-strong: var(--nexfy-border-strong);
+  --color-nexfy-text: var(--nexfy-text);
+  --color-nexfy-text-secondary: var(--nexfy-text-secondary);
+  --color-nexfy-text-tertiary: var(--nexfy-text-tertiary);
+  --color-nexfy-text-muted: var(--nexfy-text-muted);
+  --color-nexfy-accent: var(--nexfy-accent);
+  --color-nexfy-accent-hover: var(--nexfy-accent-hover);
+}
+
+html, body {
+  background: var(--nexfy-bg);
+  color: var(--nexfy-text);
 }
 
 body {
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 
 /* Smooth step transitions */
@@ -35,3 +71,9 @@ body {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Custom scrollbar for dark surfaces */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--nexfy-border); border-radius: 4px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--nexfy-border-strong); }

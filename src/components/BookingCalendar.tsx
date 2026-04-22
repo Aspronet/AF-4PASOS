@@ -89,7 +89,7 @@ export default function BookingCalendar({
   leadName,
   leadEmail,
   leadPhone,
-  accentColor = "#E8920D",
+  accentColor = "#4ade80",
   onBooked,
 }: BookingCalendarProps) {
   const [loading, setLoading] = useState(true);
@@ -308,8 +308,11 @@ export default function BookingCalendar({
   /* ── Loading state ── */
   if (loading) {
     return (
-      <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white p-12">
-        <Loader2 className="animate-spin text-gray-400" size={32} />
+      <div
+        className="flex items-center justify-center rounded-2xl border p-12"
+        style={{ backgroundColor: "#12161c", borderColor: "#242b35" }}
+      >
+        <Loader2 className="animate-spin" style={{ color: accentColor }} size={32} />
       </div>
     );
   }
@@ -317,9 +320,12 @@ export default function BookingCalendar({
   /* ── No availability configured ── */
   if (!bookingLink || !availability.length) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-8 text-center">
-        <CalendarDays size={40} className="text-gray-300" />
-        <p className="text-sm text-gray-500">No hay horarios disponibles por el momento.</p>
+      <div
+        className="flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 text-center"
+        style={{ backgroundColor: "#12161c", borderColor: "#242b35" }}
+      >
+        <CalendarDays size={40} className="text-[#323a46]" />
+        <p className="text-sm text-[#a0a8b5]">No hay horarios disponibles por el momento.</p>
       </div>
     );
   }
@@ -327,27 +333,33 @@ export default function BookingCalendar({
   /* ── Confirmed state ── */
   if (confirmed && selectedDate && selectedSlot) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-8 text-center">
+      <div
+        className="flex flex-col items-center gap-4 rounded-2xl border p-8 text-center"
+        style={{ backgroundColor: "#12161c", borderColor: "#242b35" }}
+      >
         <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: `${accentColor}20` }}>
           <Check size={32} style={{ color: accentColor }} />
         </div>
-        <h3 className="text-lg font-bold text-gray-900">¡Cita Confirmada!</h3>
-        <div className="text-sm text-gray-600">
+        <h3 className="text-lg font-bold text-[#f5f6f8]">¡Cita Confirmada!</h3>
+        <div className="text-sm text-[#cdd1da]">
           <p className="font-semibold capitalize">{formatDateES(selectedDate)}</p>
           <p>{formatTimeLabel(selectedSlot)} — {bookingLink.duration_minutes} min</p>
         </div>
-        <p className="text-xs text-gray-400">Recibirás un email de confirmación a {leadEmail}</p>
+        <p className="text-xs text-[#6a7180]">Recibirás un email de confirmación a {leadEmail}</p>
       </div>
     );
   }
 
   /* ── Calendar + Slots ── */
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+    <div
+      className="flex flex-col gap-4 rounded-2xl border p-4 sm:p-6"
+      style={{ backgroundColor: "#12161c", borderColor: "#242b35" }}
+    >
       {/* Title */}
       <div className="flex items-center gap-2">
         <CalendarDays size={20} style={{ color: accentColor }} />
-        <h3 className="text-base font-bold text-gray-900">Seleccioná fecha y hora</h3>
+        <h3 className="text-base font-bold text-[#f5f6f8]">Seleccioná fecha y hora</h3>
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
@@ -358,16 +370,16 @@ export default function BookingCalendar({
             <button
               onClick={prevMonth}
               disabled={isCurrentMonth}
-              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 disabled:opacity-30"
+              className="rounded-lg p-1.5 text-[#a0a8b5] transition-colors hover:bg-[#171c24] disabled:opacity-30"
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="text-sm font-bold text-gray-900 capitalize">
+            <span className="text-sm font-bold text-[#f5f6f8] capitalize">
               {MONTHS_ES[month]} {year}
             </span>
             <button
               onClick={nextMonth}
-              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
+              className="rounded-lg p-1.5 text-[#a0a8b5] transition-colors hover:bg-[#171c24]"
             >
               <ChevronRight size={18} />
             </button>
@@ -376,7 +388,7 @@ export default function BookingCalendar({
           {/* Day headers */}
           <div className="mb-1 grid grid-cols-7 gap-1">
             {DAYS_ES.map((d) => (
-              <div key={d} className="py-1 text-center text-[11px] font-semibold uppercase text-gray-400">
+              <div key={d} className="py-1 text-center text-[11px] font-semibold uppercase text-[#6a7180]">
                 {d}
               </div>
             ))}
@@ -409,8 +421,8 @@ export default function BookingCalendar({
                   disabled={!hasAvail || isPast}
                   className="flex aspect-square items-center justify-center rounded-lg text-sm font-medium transition-all"
                   style={{
-                    backgroundColor: isSelected ? accentColor : undefined,
-                    color: isSelected ? "#FFF" : isPast || !hasAvail ? "#D1D5DB" : "#111827",
+                    backgroundColor: isSelected ? accentColor : hasAvail && !isPast ? "#171c24" : "transparent",
+                    color: isSelected ? "#0b0d10" : isPast || !hasAvail ? "#3a4250" : "#f5f6f8",
                     border: isToday2 && !isSelected ? `2px solid ${accentColor}` : "2px solid transparent",
                     cursor: hasAvail && !isPast ? "pointer" : "default",
                   }}
@@ -426,12 +438,12 @@ export default function BookingCalendar({
         <div className="flex-1 lg:max-w-[240px]">
           {selectedDate ? (
             <div className="flex flex-col gap-2">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400 capitalize">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#6a7180] capitalize">
                 {formatDateES(selectedDate)}
               </p>
 
               {timeSlots.length === 0 ? (
-                <p className="py-8 text-center text-sm text-gray-400">No hay horarios disponibles</p>
+                <p className="py-8 text-center text-sm text-[#6a7180]">No hay horarios disponibles</p>
               ) : (
                 <div className="flex max-h-[280px] flex-col gap-1.5 overflow-y-auto pr-1">
                   {timeSlots.filter((s) => s.available).map((slot) => {
@@ -442,9 +454,9 @@ export default function BookingCalendar({
                         onClick={() => setSelectedSlot(slot.time)}
                         className="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-all"
                         style={{
-                          borderColor: isActive ? accentColor : "#E5E7EB",
-                          backgroundColor: isActive ? `${accentColor}15` : "#FFF",
-                          color: isActive ? accentColor : "#374151",
+                          borderColor: isActive ? accentColor : "#242b35",
+                          backgroundColor: isActive ? `${accentColor}18` : "#171c24",
+                          color: isActive ? accentColor : "#cdd1da",
                         }}
                       >
                         <Clock size={14} className="shrink-0 opacity-60" />
@@ -461,8 +473,8 @@ export default function BookingCalendar({
                 <button
                   onClick={handleConfirm}
                   disabled={confirming}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all disabled:opacity-60"
-                  style={{ backgroundColor: accentColor }}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all disabled:opacity-60"
+                  style={{ backgroundColor: accentColor, color: "#0b0d10" }}
                 >
                   {confirming ? (
                     <><Loader2 size={16} className="animate-spin" /> Agendando...</>
@@ -472,19 +484,19 @@ export default function BookingCalendar({
                 </button>
               )}
 
-              {error && <p className="text-center text-xs text-red-500">{error}</p>}
+              {error && <p className="text-center text-xs text-[#ff6568]">{error}</p>}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-              <Clock size={28} className="text-gray-300" />
-              <p className="text-sm text-gray-400">Seleccioná un día para ver los horarios disponibles</p>
+              <Clock size={28} className="text-[#323a46]" />
+              <p className="text-sm text-[#6a7180]">Seleccioná un día para ver los horarios disponibles</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Duration info */}
-      <div className="flex items-center gap-2 border-t border-gray-100 pt-3 text-xs text-gray-400">
+      <div className="flex items-center gap-2 border-t pt-3 text-xs text-[#6a7180]" style={{ borderColor: "#242b35" }}>
         <Clock size={12} />
         <span>Duración: {bookingLink.duration_minutes} min</span>
         <span className="mx-1">•</span>
